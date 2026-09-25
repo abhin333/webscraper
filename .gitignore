@@ -1,0 +1,18 @@
+# Environment & SQLite database files
+.env
+*.db
+*.sqlite3
+
+# Python Virtual Environments & Caches
+venv/
+__pycache__/
+*.pyc
+
+# Node / Frontend modules
+node_modules/
+dist/
+
+# IDE / OS settings
+.vscode/
+.idea/
+.DS_Store
