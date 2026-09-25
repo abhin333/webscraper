@@ -1,9 +1,17 @@
-# MMI Connect Exhibitor Scraper Service
+# 🚀 Hubble Exhibitor Platform
 
-An API-triggered web scraper for `mmiconnect.in` exhibitors built with Python, FastAPI, Selenium, and SQLite normalized to **3NF**.
+A full-stack web application built with **Next.js (App Router)** and **FastAPI (Python/SQLite)**. The platform dynamically fetches live scraper statistics and exhibitor records from a Python SQLite database and renders them in an interactive Next.js frontend with live dropdown metrics and real-time status updates.
 
-## 🚀 How to Run
+---
 
-1. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
+## ⚡ Quick Start (TL;DR)
+
+If you already have Python and Node.js installed, run these commands in two separate terminal windows:
+
+### Terminal 1: Backend (FastAPI)
+```bash
+cd exhibitor-scraper
+python -m venv venv
+# On Windows: venv\Scripts\activate | On Mac/Linux: source venv/bin/activate
+pip install fastapi uvicorn "pydantic[email]" email-validator
+uvicorn app:app --reload --port 8000
