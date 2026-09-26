@@ -5,7 +5,7 @@ import sqlite3
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
-from database import get_db, init_db
+from database import get_db, get_exhibitor_locations, init_db
 from models import ConsultRequest
 from scraper import run_scraper
 
@@ -88,6 +88,32 @@ def submit_consult(payload: ConsultRequest):
         return {"status": "success", "message": "Consultation request submitted successfully."}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@app.get("/api/exhibitor-locations")
+def get_exhibitor_locations_route(
+    event_slug: str = Query(default=None, description="Filter to one event, e.g. 'ep-blr-2026'"),
+    limit: int = Query(default=50, ge=1, le=200),
+    offset: int = Query(default=0, ge=0),
+):
+    """
+    Returns { count, results } from exhibitor_locations, joined with the
+    exhibitor's name/profile_url/country and the event slug, so hall/booth
+    info comes back attached to who and where.
+    """
+    try:
+        total_count, locations = get_exhibitor_locations(
+            event_slug=event_slug, limit=limit, offset=offset
+        )
+        return {
+            "count": total_count,
+            "results": locations
+        }
+    except sqlite3.OperationalError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Database query failed: {str(e)}. Make sure the 'exhibitor_locations' table exists."
+        )
 
 
 @app.get("/api/exhibitors")

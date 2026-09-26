@@ -1,5 +1,5 @@
 # Environment & SQLite database files
-.env
+# .env
 *.db
 *.sqlite3
 

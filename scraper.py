@@ -9,8 +9,14 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from config import TARGET_BASE_URL
 from database import save_to_db_normalized
+
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+
+TARGET_BASE_URL = os.getenv("TARGET_BASE_URL")
 
 HALL_PATTERN = re.compile(r"Hall\s*(?:No\.?)?\s*[:\-]?\s*([A-Za-z0-9\-]+)", re.IGNORECASE)
 BOOTH_PATTERN = re.compile(r"(?:Booth|Stall)\s*(?:No\.?)?\s*[:\-]?\s*([A-Za-z0-9\-]+)", re.IGNORECASE)

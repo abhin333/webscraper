@@ -4,8 +4,14 @@ import os
 import sqlite3
 from contextlib import contextmanager
 from typing import Any, Dict, List
+from dotenv import load_dotenv
+import os
 
-from config import DB_NAME
+load_dotenv()
+
+DB_NAME = os.getenv("DB_NAME")
+
+
 
 
 # --- Connection helper ---
@@ -142,3 +148,54 @@ def save_to_db_normalized(exhibitor_data: List[Dict[str, Any]], event_slug: str 
 
     print(f"[DB SAVE SUCCESS] {upserted_count} records upserted successfully.")
     return upserted_count
+
+
+# --- Read queries ---
+
+def get_exhibitor_locations(event_slug: str = None, limit: int = 100, offset: int = 0):
+    """
+    Returns exhibitor_locations rows joined with exhibitor name/profile_url,
+    country name, and event slug. Optionally filtered to a single event.
+    """
+    with get_db() as conn:
+        cursor = conn.cursor()
+
+        base_query = """
+            SELECT
+                exhibitor_locations.id AS location_id,
+                exhibitors.id AS exhibitor_id,
+                exhibitors.name AS exhibitor_name,
+                exhibitors.profile_url AS profile_url,
+                countries.name AS country,
+                events.slug AS event_slug,
+                exhibitor_locations.hall_no AS hall_no,
+                exhibitor_locations.booth_no AS booth_no
+            FROM exhibitor_locations
+            JOIN exhibitors ON exhibitor_locations.exhibitor_id = exhibitors.id
+            JOIN events ON exhibitor_locations.event_id = events.id
+            LEFT JOIN countries ON exhibitors.country_id = countries.id
+        """
+
+        params = []
+        if event_slug:
+            base_query += " WHERE events.slug = ?"
+            params.append(event_slug)
+
+        base_query += " ORDER BY exhibitor_locations.id DESC LIMIT ? OFFSET ?"
+        params.extend([limit, offset])
+
+        cursor.execute(base_query, params)
+        rows = cursor.fetchall()
+
+        # Total count for pagination, respecting the same event filter
+        if event_slug:
+            cursor.execute("""
+                SELECT COUNT(*) FROM exhibitor_locations
+                JOIN events ON exhibitor_locations.event_id = events.id
+                WHERE events.slug = ?
+            """, (event_slug,))
+        else:
+            cursor.execute("SELECT COUNT(*) FROM exhibitor_locations")
+        total_count = cursor.fetchone()[0]
+
+    return total_count, [dict(row) for row in rows]
